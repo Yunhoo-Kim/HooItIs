@@ -3,6 +3,8 @@ package com.hooitis.hoo.hooitis.utils
 import android.graphics.Bitmap
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.UploadTask
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import java.io.ByteArrayOutputStream
 import java.util.*
 
@@ -53,5 +55,7 @@ class Utils {
         }
 
         fun makeRandomString(): String = UUID.randomUUID().toString()
+
+        fun convertString2List(value: String): List<String> = Gson().fromJson(value, object : TypeToken<List<String>>() {}.type)
     }
 }

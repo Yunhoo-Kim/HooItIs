@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.databinding.DataBindingUtil
 import android.os.Bundle
+import android.os.Handler
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
@@ -15,11 +16,22 @@ import android.support.v7.widget.PagerSnapHelper
 import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.MotionEvent
+import android.view.animation.AnimationUtils
+import com.google.android.gms.ads.AdListener
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.InterstitialAd
+import com.google.android.gms.ads.MobileAds
 import com.hooitis.hoo.hooitis.R
 import com.hooitis.hoo.hooitis.base.BaseActivity
 import com.hooitis.hoo.hooitis.databinding.ActivityMainBinding
 import com.hooitis.hoo.hooitis.di.ViewModelFactory
+import com.hooitis.hoo.hooitis.model.SharedPreferenceHelper
+import com.hooitis.hoo.hooitis.utils.AUTO_MIC
+import com.hooitis.hoo.hooitis.utils.AdCount
+import com.hooitis.hoo.hooitis.utils.BTN_MIC
+import com.hooitis.hoo.hooitis.utils.UiUtils
 import com.hooitis.hoo.hooitis.vm.MainVM
+import java.lang.Exception
 import java.util.*
 import javax.inject.Inject
 
@@ -31,27 +43,93 @@ class MainActivity: BaseActivity(), RecognitionListener {
     private lateinit var speechRecognizer: SpeechRecognizer
     private lateinit var viewModel: MainVM
     private lateinit var binding: ActivityMainBinding
+    private lateinit var mInterstitialAd:InterstitialAd
     private var listening: Boolean = false
 
     val MIC = 1234
 
+    private val DELAY: Long = 1500
+    private val STOP_DELAY: Long = 500
+    private val mDelayHandler: Handler by lazy {
+        Handler()
+    }
+    private val mStopListeningDelayHandler: Handler by lazy {
+        Handler()
+    }
+    private val mAdCount: AdCount by lazy {
+        AdCount.getInstance()
+    }
+    private val mShowAdView: Runnable = Runnable {
+        mAdCount.addCount()
+        if(!isFinishing && (mAdCount.count % 2 == 0)){
+            if(mInterstitialAd.isLoaded)
+                mInterstitialAd.show()
+            else
+                finish()
+        }else
+            finish()
+    }
+
+    private val mStopListening: Runnable = Runnable {
+        stopListeningSpeech()
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         viewModel = ViewModelProviders.of(this, viewModelFactory).get(MainVM::class.java)
 
         binding.viewModel = viewModel
         binding.setLifecycleOwner(this)
+        setContentView(binding.root)
 
-        binding.voice.setOnTouchListener { _, event ->
-            when(event.action){
-                MotionEvent.ACTION_UP -> { stopListeningSpeech()
-                    return@setOnTouchListener true }
-                MotionEvent.ACTION_DOWN -> { listeningSpeech()
-                    return@setOnTouchListener true }
-                else -> return@setOnTouchListener true
+        MobileAds.initialize(this, getString(R.string.admob))
+        mInterstitialAd = InterstitialAd(this).apply {
+            adUnitId = getString(R.string.admob_id)
+            loadAd(AdRequest.Builder().build())
+            adListener = object : AdListener(){
+                override fun onAdClosed() {
+                    super.onAdClosed()
+                    finish()
+                }
             }
+        }
+
+        viewModel.wrong.observe(this, android.arch.lifecycle.Observer {
+            if(it!!){
+                stopListeningSpeech()
+                binding.voice.isClickable = false
+                viewModel.countDown.postValue(getString(R.string.wrong))
+                mDelayHandler.postDelayed(mShowAdView, DELAY)
+            }else{
+                mDelayHandler.removeCallbacks(mShowAdView)
+            }
+        })
+
+        if(viewModel.sharedPreferenceHelper.getInt(SharedPreferenceHelper.KEY.MIC_MODE) == BTN_MIC){
+            binding.voice.setOnTouchListener { _, event ->
+                when(event.action){
+                    MotionEvent.ACTION_UP -> {
+                        mStopListeningDelayHandler.removeCallbacks(mStopListening)
+                        mStopListeningDelayHandler.postDelayed(mStopListening, STOP_DELAY)
+                        return@setOnTouchListener true }
+                    MotionEvent.ACTION_DOWN -> { listeningSpeech()
+                        return@setOnTouchListener true }
+                    else -> return@setOnTouchListener true
+                }
+            }
+        }else{
+            viewModel.quizIndex.observe(this, android.arch.lifecycle.Observer {
+                if (!viewModel.wrong.value!!) {
+                    stopListeningSpeech()
+                    try {
+                        listeningSpeech()
+                    }catch (e: Exception){
+                    }
+                }
+            })
         }
 
         binding.quizList.apply {
@@ -66,14 +144,13 @@ class MainActivity: BaseActivity(), RecognitionListener {
             pagerSnapHelper.attachToRecyclerView(binding.quizList)
             isLayoutFrozen = true
         }
-        setContentView(binding.root)
 
 
         if(ContextCompat.checkSelfPermission(this, android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED)
             requestPermissions(arrayOf(android.Manifest.permission.RECORD_AUDIO), MIC)
         else{
-            viewModel.loadQuizData()
         }
+        viewModel.loadQuizData()
     }
 
     private fun stopListeningSpeech() {
@@ -91,8 +168,6 @@ class MainActivity: BaseActivity(), RecognitionListener {
             return
         listening = true
 
-        Log.d("Speech", "listening")
-
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this).apply {
             setRecognitionListener(this@MainActivity)
         }
@@ -100,9 +175,19 @@ class MainActivity: BaseActivity(), RecognitionListener {
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
         intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, packageName)
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, Locale.KOREAN)
-        intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3)
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR")
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+//                RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH)
                 RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+
+        intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 4500)
+        intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 500)
+        intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 500)
+//        intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5)
+//        RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH)
+//        binding.voice.play()
+        val pulseAnim = AnimationUtils.loadAnimation(this, R.anim.pulse)
+        binding.voice.startAnimation(pulseAnim)
         speechRecognizer.startListening(intent)
     }
 
@@ -112,7 +197,6 @@ class MainActivity: BaseActivity(), RecognitionListener {
         when(requestCode){
             MIC -> {
                 if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-//                    Snackbar.make(th, R.string.allow_grant, Snackbar.LENGTH_SHORT).show()
                 } else {
                     listeningSpeech()
                 }
@@ -121,14 +205,9 @@ class MainActivity: BaseActivity(), RecognitionListener {
     }
 
     override fun onBeginningOfSpeech() {
-        Log.d("Speech", "Begin")
     }
-
-    override fun onBufferReceived(buffer: ByteArray?) {
-    }
-
+    override fun onBufferReceived(buffer: ByteArray?) {}
     override fun onEndOfSpeech() {
-        Log.d("Speech", "end")
     }
 
     override fun onError(error: Int) {
@@ -146,27 +225,29 @@ class MainActivity: BaseActivity(), RecognitionListener {
             SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "No speech input"
             else -> "Didn't understand, please try again."
         }
+
+        UiUtils.makeToast(binding.root, R.string.retry)
     }
 
-    override fun onEvent(eventType: Int, params: Bundle?) {
-    }
-
-    override fun onPartialResults(partialResults: Bundle?) {
-    }
-
-    override fun onReadyForSpeech(params: Bundle?) {
-        Log.d("Speech", "onReadyForSpeech")
-    }
+    override fun onEvent(eventType: Int, params: Bundle?) {}
+    override fun onPartialResults(partialResults: Bundle?) {}
+    override fun onReadyForSpeech(params: Bundle?) {}
 
     override fun onResults(results: Bundle?) {
         val matches = results!!.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION) ?: return
-
-        for(m in matches){
-            Log.d("Speech", m)
-        }
-        viewModel.showNextQuiz()
+//        var msg = ""
+//        for (m in matches){
+//            msg += " $m"
+//        }
+//        UiUtils.makeToast(binding.root, msg)
+        viewModel.checkResult(matches)
+        listening = false
+//        binding.voice.stop()
     }
+    override fun onRmsChanged(rmsdB: Float) {}
 
-    override fun onRmsChanged(rmsdB: Float) {
+    override fun onDestroy() {
+        stopListeningSpeech()
+        super.onDestroy()
     }
 }

@@ -32,7 +32,7 @@ class AppModule(private val app: Application){
                     .fallbackToDestructiveMigration()
                     .build()
 
-//    @Provides
-//    @Singleton
-//    fun provideFirebaseStore(): FirebaseFirestore = FirebaseFirestore.getInstance()
+    @Provides
+    @Singleton
+    fun provideFirebaseStore(): FirebaseFirestore = FirebaseFirestore.getInstance()
 }

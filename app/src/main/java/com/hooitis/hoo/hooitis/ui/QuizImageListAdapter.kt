@@ -6,11 +6,12 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.hooitis.hoo.hooitis.R
 import com.hooitis.hoo.hooitis.databinding.ItemImageBinding
+import com.hooitis.hoo.hooitis.model.quiz.Quiz
 import com.hooitis.hoo.hooitis.vm.QuizItemVM
 
 
 class QuizImageListAdapter: RecyclerView.Adapter<QuizImageListAdapter.ViewHolder>() {
-    private lateinit var quizList: List<String>
+    private lateinit var quizList: List<Quiz>
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding: ItemImageBinding = DataBindingUtil.inflate(LayoutInflater.from(parent.context), R.layout.item_image,
@@ -22,7 +23,7 @@ class QuizImageListAdapter: RecyclerView.Adapter<QuizImageListAdapter.ViewHolder
         holder.bind(quizList[position])
     }
 
-    fun updateQuizList(quizList: List<String>){
+    fun updateQuizList(quizList: List<Quiz>){
         this.quizList = quizList
         notifyDataSetChanged()
     }
@@ -32,7 +33,7 @@ class QuizImageListAdapter: RecyclerView.Adapter<QuizImageListAdapter.ViewHolder
     class ViewHolder(private val binding: ItemImageBinding): RecyclerView.ViewHolder(binding.root){
         private val quizVM = QuizItemVM()
 
-        fun bind(quiz: String){
+        fun bind(quiz: Quiz){
             quizVM.bind(quiz)
             binding.viewModel = quizVM
         }

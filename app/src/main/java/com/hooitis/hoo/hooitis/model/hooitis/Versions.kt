@@ -8,5 +8,6 @@ import android.arch.persistence.room.PrimaryKey
 data class Versions(
         @PrimaryKey(autoGenerate = true)
         val id: Long = 0,
-        val appVersion: Long
+        val appVersion: Long,
+        val dbVersion : Long
 )

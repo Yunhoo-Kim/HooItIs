@@ -1,9 +1,12 @@
 package com.hooitis.hoo.hooitis.utils
 
+import android.animation.ObjectAnimator
 import android.arch.lifecycle.MutableLiveData
 import android.databinding.BindingAdapter
 import android.support.v7.widget.RecyclerView
 import android.util.Log
+import android.view.View
+import android.view.animation.TranslateAnimation
 import android.widget.ImageView
 import android.widget.TextView
 import com.bumptech.glide.Glide
@@ -55,17 +58,42 @@ fun setImageResourceByURI(view: ImageView, image_id: MutableLiveData<String>?){
         view.setImageResource(R.drawable.microphone)
         return
     }
+    val imageUrl = image_id.value!!
 
-    Glide.with(view.getParentActivity()!!)
-            .load(FirebaseStorage.getInstance().reference.child(image_id.value!!))
-//            .apply(RequestOptions.)
-            .into(view)
+    if(imageUrl.startsWith("http"))
+        Glide.with(view.getParentActivity()!!)
+                .load(imageUrl)
+                .into(view)
+    else
+        Glide.with(view.getParentActivity()!!)
+                .load(FirebaseStorage.getInstance().reference.child(imageUrl))
+                .into(view)
 }
 
-//@Suppress("unused")
-//@BindingAdapter("tabadapter")
-//fun setTabAdapter(view: ViewPager, adapter: FragmentPagerAdapter) {
-//    view.adapter = adapter
-//}
+@BindingAdapter("countText")
+@Suppress("unused")
+fun setCountText(view: TextView, count: MutableLiveData<String>){
+    view.text = count.value
 
+    val startSize = view.resources.getDimension(R.dimen.textTitleSize)
+    val endSize = view.resources.getDimension(R.dimen.textMediumSize)
+
+    val animator = ObjectAnimator.ofFloat(view, "textSize", startSize, endSize)
+    ObjectAnimator.ofFloat()
+
+    animator.duration = 1000
+    animator.start()
+}
+@BindingAdapter("beforeCountText")
+@Suppress("unused")
+fun setBeforeCountText(view: TextView, count: MutableLiveData<String>){
+    view.text = count.value
+//    val startSize = view.resources.getDimension(R.dimen.textMediumLargeSize)
+//    val endSize = view.resources.getDimension(R.dimen.textMediumSize)
+//
+//    val animator = ObjectAnimator.ofFloat(view, "textSize", startSize, endSize)
+//    ObjectAnimator.ofFloat()
+//    animator.duration = 1000
+//    animator.start()
+}
 

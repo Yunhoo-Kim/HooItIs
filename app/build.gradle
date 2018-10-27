@@ -13,7 +13,7 @@ android {
         minSdkVersion 23
         targetSdkVersion 27
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     dataBinding {
@@ -70,8 +70,14 @@ dependencies {
     kapt 'com.github.bumptech.glide:compiler:4.8.0'
 
     // Ad
-//    implementation 'com.google.android.gms:play-services-ads:17.0.0'
-//    implementation 'com.google.firebase:firebase-ads:17.0.0'
+    implementation 'com.google.android.gms:play-services-ads:17.0.0'
+    implementation 'com.google.firebase:firebase-ads:17.0.0'
+
+    // speech animation
+//    implementation 'com.github.zagum:SpeechRecognitionView:1.2.2'
+
+    // segmented button
+    implementation "info.hoang8f:android-segmented:1.0.6"
 
     // Firebase
     implementation 'com.google.firebase:firebase-core:16.0.4'
@@ -87,7 +93,8 @@ dependencies {
     implementation 'com.androidhuman.rxfirebase2:firebase-firestore:17.1.0.0'
     implementation 'com.androidhuman.rxfirebase2:firebase-core:16.0.3.0'
 
-//    implementation 'com.firebaseui:firebase-ui-storage:3.0.0'
+//    implementation 'com.fireba
+// seui:firebase-ui-storage:3.0.0'
 
 
     // Support Design
@@ -104,3 +111,5 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 }
+
+apply plugin: 'com.google.gms.google-services'

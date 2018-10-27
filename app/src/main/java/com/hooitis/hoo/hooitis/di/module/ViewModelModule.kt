@@ -5,6 +5,7 @@ import android.arch.lifecycle.ViewModelProvider
 import com.hooitis.hoo.hooitis.di.ViewModelFactory
 import com.hooitis.hoo.hooitis.di.ViewModelKey
 import com.hooitis.hoo.hooitis.vm.MainVM
+import com.hooitis.hoo.hooitis.vm.VersionVM
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoMap
@@ -20,5 +21,10 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(MainVM::class)
     internal abstract fun bindMainVM(mainVM: MainVM): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(VersionVM::class)
+    internal abstract fun bindVersionVM(versionVM: VersionVM): ViewModel
 
 }

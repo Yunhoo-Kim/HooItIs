@@ -5,16 +5,17 @@ import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.hooitis.hoo.hooitis.BuildConfig
 import com.hooitis.hoo.hooitis.model.SharedPreferenceHelper
+import com.hooitis.hoo.hooitis.model.quiz.QuizRepository
 import com.hooitis.hoo.hooitis.utils.FIREBASE_VERSION_DB
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 import javax.inject.Inject
 
 @Suppress("unused")
-class VersionsRepository @Inject constructor(private val versionsDao: VersionsDao,
-//                                             private val foodRepository: FoodRepository,
-//                                             private val firebaseStore: FirebaseFirestore,
-                                             private val sharedPreferenceHelper: SharedPreferenceHelper){
+class VersionsRepository @Inject constructor(val versionsDao: VersionsDao,
+                                             val quizRepository: QuizRepository,
+                                             val firebaseStore: FirebaseFirestore,
+                                             val sharedPreferenceHelper: SharedPreferenceHelper){
 
 
     val mCompositeDisposable: CompositeDisposable by lazy {
@@ -23,26 +24,26 @@ class VersionsRepository @Inject constructor(private val versionsDao: VersionsDa
     init {
     }
 
-//    private fun loadVersionFromServer(): Observable<Versions> {
-//        return Observable.create { emitter ->
-//            firebaseStore.collection(FIREBASE_VERSION_DB).document(FIREBASE_VERSION_DB).get().addOnCompleteListener { res ->
-//                if (res.isSuccessful) {
-//                    emitter.onNext(
-//                            Versions(appVersion = res.result!!.data!!["appVersion"].toString().toLong()))
-//                }else{
-//                    emitter.onError(Exception())
-//                }
-//            }.addOnFailureListener {err ->
-//                Log.d("error", err.toString())
-//            }
-//        }
-//    }
+    fun loadVersionFromServer(): Observable<Versions> {
+        return Observable.create { emitter ->
+            firebaseStore.collection(FIREBASE_VERSION_DB).document(FIREBASE_VERSION_DB).get().addOnCompleteListener { res ->
+                if (res.isSuccessful) {
+                    emitter.onNext(
+                            Versions(appVersion = res.result!!.data!!["appVersion"].toString().toLong(),
+                                    dbVersion = res.result!!.data!!["dbVersion"].toString().toLong()))
+                }else{
+                    emitter.onError(Exception())
+                }
+            }.addOnFailureListener {err ->
+                Log.d("error", err.toString())
+            }
+        }
+    }
 
-    private fun loadLocalVersions(): Versions {
+    fun loadLocalVersions(): Versions {
         var versionList = versionsDao.get()
         if(versionList.isEmpty()){
-            versionsDao.insert(Versions(0, BuildConfig.VERSION_CODE.toLong()))
-            // init application
+            versionsDao.insert(Versions(0, appVersion=BuildConfig.VERSION_CODE.toLong(), dbVersion = -1))
             versionList = versionsDao.get()
         }
 
@@ -55,23 +56,34 @@ class VersionsRepository @Inject constructor(private val versionsDao: VersionsDa
     }
 
     @SuppressLint("CheckResult")
-    fun checkVersion(){
-//        loadVersionFromServer()
+    fun checkVersion() = loadVersionFromServer()
+//        mCompositeDisposable.add(loadVersionFromServer()
 //                .subscribe({serverVersion ->
 //                    val localVersion = loadLocalVersions()
-////                    if(serverVersion.foodDBVersion != localVersion.foodDBVersion){
-////                        foodRepository.loadFoodsFromStore().subscribe({
-////                        },{
-////
-////                        })
-////                    }
+//                    if(serverVersion.dbVersion != localVersion.dbVersion){
+//                        quizRepository.loadQuizFromStore().subscribe {  }
+//                    }
 //                    if(serverVersion.appVersion != localVersion.appVersion){
 //                        // update application from store
 //                    }
-//                    // update version db
 //                    versionsDao.deleteAll()
 //                    versionsDao.insert(serverVersion)
 //                }, {
-//                })
-    }
+//                }))
+//    }
+//    fun checkVersion(){
+//        mCompositeDisposable.add(loadVersionFromServer()
+//                .subscribe({serverVersion ->
+//                    val localVersion = loadLocalVersions()
+//                    if(serverVersion.dbVersion != localVersion.dbVersion){
+//                        quizRepository.loadQuizFromStore().subscribe {  }
+//                    }
+//                    if(serverVersion.appVersion != localVersion.appVersion){
+//                        // update application from store
+//                    }
+//                    versionsDao.deleteAll()
+//                    versionsDao.insert(serverVersion)
+//                }, {
+//                }))
+//    }
 }
