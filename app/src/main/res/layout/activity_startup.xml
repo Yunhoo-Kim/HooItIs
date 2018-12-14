@@ -17,13 +17,20 @@
         <ImageView
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:src="@drawable/background"
+            android:background="@color/colorPrimary"
             android:scaleType="centerCrop"
-            android:tint="#99000000"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />
+
+        <android.support.constraint.ConstraintLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/warning_text"
+            app:layout_constraintTop_toTopOf="parent">
 
         <TextView
             android:id="@+id/title"
@@ -31,75 +38,183 @@
             android:layout_height="wrap_content"
             android:text="@string/quiz"
             android:textAlignment="center"
-            android:layout_marginTop="90dp"
-            android:textSize="90dp"
-            android:textColor="@color/colorPrimary"
-            style="@style/haeRang"
+            android:textColor="@color/white"
+            android:textSize="83dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="26dp"
+            android:textAppearance="@style/bmYs.Huge"
             app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/mic_setting"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
-
-        <android.support.constraint.ConstraintLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginBottom="80dp"
-            app:layout_constraintBottom_toTopOf="@+id/warning_text">
 
 
             <info.hoang8f.android.segmented.SegmentedGroup
                 android:id="@+id/mic_setting"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                app:layout_constraintStart_toStartOf="@+id/start_quiz"
-                app:layout_constraintEnd_toEndOf="@+id/start_quiz"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toTopOf="@+id/start_quiz"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/title"
+                app:layout_constraintBottom_toTopOf="@+id/player_setting"
+                android:layout_marginBottom="18dp"
                 android:gravity="center"
-                android:layout_marginBottom="12dp"
-                android:padding="15dp"
-                app:sc_corner_radius="4dp"
-                app:sc_border_width="2dp"
+                android:elevation="10dp"
+                app:sc_corner_radius="15dp"
+                app:sc_border_width="0dp"
+                app:sc_checked_text_color="@color/colorPrimary"
                 android:orientation="horizontal">
 
                 <RadioButton
                     android:id="@+id/auto_voice"
                     android:text="@string/auto_voice"
                     style="@style/RadioButton"
-                    android:textAppearance="@style/appFont.Small"
+                    android:textAppearance="@style/appFont.XSmall"
+                    android:textStyle="bold"
                     android:checked="true"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
 
                 <RadioButton
                     android:id="@+id/button_voice"
-                    android:text="@string/button_voice"
                     style="@style/RadioButton"
-                    android:textAppearance="@style/appFont.Small"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    />
+                    android:text="@string/button_voice"
+                    android:textAppearance="@style/appFont.XSmall"
+                    android:textStyle="bold" />
+
+                <RadioButton
+                    android:id="@+id/keyboard_input"
+                    style="@style/RadioButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/keyboard_mode"
+                    android:textAppearance="@style/appFont.XSmall"
+                    android:textStyle="bold" />
 
             </info.hoang8f.android.segmented.SegmentedGroup>
-            <Button
-                android:id="@+id/start_quiz"
+
+
+            <info.hoang8f.android.segmented.SegmentedGroup
+                android:id="@+id/player_setting"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="40dp"
-                android:layout_marginEnd="40dp"
-                android:layout_marginTop="25dp"
-                android:paddingTop="15dp"
-                android:paddingBottom="15dp"
-                android:text="@string/quiz_start"
-                android:textColor="@color/white"
-                android:background="@drawable/circle_background"
-                android:textAppearance="@style/hannaAir"
-                android:textSize="@dimen/textTitleSubSize"
-                android:textStyle="bold"
-                app:layout_constraintTop_toBottomOf="@+id/mic_setting"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"/>
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/mic_setting"
+                app:layout_constraintBottom_toTopOf="@+id/start_quiz"
+                android:layout_marginTop="10dp"
+                android:gravity="center"
+                android:elevation="10dp"
+                app:sc_border_width="0dp"
+                app:sc_checked_text_color="@color/colorPrimary"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/one_p"
+                    android:text="@string/one_p"
+                    style="@style/PlayerRadioButton"
+                    android:textAppearance="@style/appFont.XSmall"
+                    android:textStyle="bold"
+                    android:checked="true"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <RadioButton
+                    android:id="@+id/two_p"
+                    style="@style/PlayerRadioButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/two_p"
+                    android:textAppearance="@style/appFont.XSmall"
+                    android:textStyle="bold" />
+
+                <RadioButton
+                    android:id="@+id/three_p"
+                    style="@style/PlayerRadioButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/three_p"
+                    android:textAppearance="@style/appFont.XSmall"
+                    android:textStyle="bold" />
+
+                <RadioButton
+                    android:id="@+id/four_p"
+                    style="@style/PlayerRadioButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/four_p"
+                    android:textAppearance="@style/appFont.XSmall"
+                    android:textStyle="bold" />
+
+                <RadioButton
+                    android:id="@+id/five_p"
+                    style="@style/PlayerRadioButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/five_p"
+                    android:textAppearance="@style/appFont.XSmall"
+                    android:textStyle="bold" />
+            </info.hoang8f.android.segmented.SegmentedGroup>
+
+            <android.support.constraint.ConstraintLayout
+                android:id="@+id/start_quiz"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:layout_marginStart="70dp"
+                android:layout_marginEnd="70dp"
+                android:layout_marginTop="32dp"
+                android:text="@string/quiz_start"
+                app:layout_constraintTop_toBottomOf="@+id/player_setting"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <android.support.constraint.ConstraintLayout
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:background="@drawable/circle_background"
+                    android:backgroundTint="@color/white"
+                    android:elevation="5dp"
+                    android:layout_marginBottom="18dp"
+                    android:layout_marginStart="9dp"
+                    android:layout_marginEnd="9dp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent">
+
+                    <TextView
+                        android:id="@+id/start_text"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="@string/quiz_start"
+                        android:textAppearance="@style/bmYs.Title"
+                        android:textColor="@color/colorPrimary"
+                        android:textAlignment="center"
+                        android:layout_marginBottom="40dp"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent" />
+
+                    <ImageView
+                        android:id="@+id/play"
+                        android:layout_width="31dp"
+                        android:layout_height="31dp"
+                        android:src="@drawable/play"
+                        android:tint="@color/colorPrimary"
+                        android:elevation="12dp"
+                        android:layout_marginStart="17dp"
+                        android:layout_marginTop="10dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/start_text"/>
+
+                </android.support.constraint.ConstraintLayout>
+
+            </android.support.constraint.ConstraintLayout>
+
 
 
         </android.support.constraint.ConstraintLayout>
@@ -109,11 +224,11 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textAlignment="center"
-            android:textAppearance="@style/hannaAir"
-            android:textStyle="bold"
-            android:textColor="@color/colorPrimary"
+            android:textAppearance="@style/appFont.Small"
+            android:textSize="@dimen/textMSmallSize"
+            android:textColor="@color/white"
             android:text="@string/warning"
-            android:layout_marginBottom="20dp"
+            android:layout_marginBottom="30dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />

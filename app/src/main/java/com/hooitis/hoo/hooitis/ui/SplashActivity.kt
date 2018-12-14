@@ -2,10 +2,14 @@ package com.hooitis.hoo.hooitis.ui
 
 import android.annotation.SuppressLint
 import android.arch.lifecycle.ViewModelProviders
+import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.databinding.DataBindingUtil
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.os.Handler
+import android.support.v7.app.AlertDialog
 import com.hooitis.hoo.hooitis.R
 import com.hooitis.hoo.hooitis.base.BaseActivity
 import com.hooitis.hoo.hooitis.databinding.ActivitySplashBinding
@@ -45,6 +49,22 @@ class SplashActivity: BaseActivity(){
         binding.viewModel = viewModel
         binding.setLifecycleOwner(this)
         setContentView(binding.root)
+
+        val cm: ConnectivityManager = this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkInfo = cm.activeNetworkInfo
+
+        if(!(networkInfo != null && networkInfo.isConnectedOrConnecting)){
+            val dialog = AlertDialog.Builder(this).apply {
+                setMessage(R.string.need_network)
+                        .setPositiveButton(R.string.confirm) { _, _ ->
+                            finish()
+                        }
+            }
+
+            dialog.create()
+            dialog.show()
+            return
+        }
 
         viewModel.checkVersion()
                 .subscribe({serverVersion ->

@@ -4,10 +4,8 @@
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
 
     <application
         android:allowBackup="true"
@@ -19,7 +17,8 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
         <activity android:name=".ui.SplashActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize">
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:screenOrientation="portrait">
 
             <intent-filter>
                 <data android:name="android.content.Intent.FLAG_ACTIVITY_NO_ANIMATION" />
@@ -27,13 +26,21 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".ui.MainActivity">
+        <activity android:name=".ui.MainActivity"
+            android:screenOrientation="portrait">
         </activity>
 
-        <activity android:name=".ui.QuizStartActivity">
+        <activity android:name=".ui.QuizStartActivity"
+            android:screenOrientation="portrait">
         </activity>
 
         <activity android:name=".ui.BeforeQuizActivity">
+        </activity>
+
+        <activity android:name=".ui.KeyboardModeActivity">
+        </activity>
+
+        <activity android:name=".ui.QuizResultActivity">
         </activity>
 
         <activity android:name="com.google.android.gms.ads.AdActivity"

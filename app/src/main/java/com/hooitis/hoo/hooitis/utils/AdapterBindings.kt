@@ -84,6 +84,12 @@ fun setCountText(view: TextView, count: MutableLiveData<String>){
     animator.duration = 1000
     animator.start()
 }
+@BindingAdapter("playerText")
+@Suppress("unused")
+fun setPlayerText(view: TextView, count: MutableLiveData<Int>){
+    view.text = "${view.resources.getString(R.string.player)} ${count.value!! + 1}"
+}
+
 @BindingAdapter("beforeCountText")
 @Suppress("unused")
 fun setBeforeCountText(view: TextView, count: MutableLiveData<String>){

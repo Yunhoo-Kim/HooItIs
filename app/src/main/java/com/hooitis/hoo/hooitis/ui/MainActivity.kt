@@ -2,11 +2,13 @@ package com.hooitis.hoo.hooitis.ui
 
 import android.annotation.SuppressLint
 import android.arch.lifecycle.ViewModelProviders
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.os.Handler
+import android.os.Vibrator
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
@@ -49,25 +51,30 @@ class MainActivity: BaseActivity(), RecognitionListener {
     val MIC = 1234
 
     private val DELAY: Long = 1500
-    private val STOP_DELAY: Long = 500
+    private val STOP_DELAY: Long = 250
+    private val vibrator: Vibrator by lazy {
+        getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+    }
     private val mDelayHandler: Handler by lazy {
         Handler()
     }
+
     private val mStopListeningDelayHandler: Handler by lazy {
         Handler()
     }
+
     private val mAdCount: AdCount by lazy {
         AdCount.getInstance()
     }
+
     private val mShowAdView: Runnable = Runnable {
-        mAdCount.addCount()
-        if(!isFinishing && (mAdCount.count % 2 == 0)){
+        if(!isFinishing){
             if(mInterstitialAd.isLoaded)
                 mInterstitialAd.show()
             else
-                finish()
+                showResultActivity()
         }else
-            finish()
+            showResultActivity()
     }
 
     private val mStopListening: Runnable = Runnable {
@@ -92,7 +99,8 @@ class MainActivity: BaseActivity(), RecognitionListener {
             adListener = object : AdListener(){
                 override fun onAdClosed() {
                     super.onAdClosed()
-                    finish()
+                    showResultActivity()
+                    Log.d("Resulta", "Closed")
                 }
             }
         }
@@ -153,8 +161,15 @@ class MainActivity: BaseActivity(), RecognitionListener {
         viewModel.loadQuizData()
     }
 
+    private fun showResultActivity(){
+        try {
+            UiUtils.replaceNewFragment(this, QuizResultFragment.newInstance(Bundle()), R.id.container_main)
+        }catch (e: IllegalStateException){
+            finish()
+        }
+    }
+
     private fun stopListeningSpeech() {
-        Log.d("Speech", "stop")
         if(listening){
             speechRecognizer.stopListening()
             speechRecognizer.cancel()
@@ -163,11 +178,8 @@ class MainActivity: BaseActivity(), RecognitionListener {
     }
 
     private fun listeningSpeech(){
-
-        if(listening)
-            return
+        if(listening) return
         listening = true
-
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this).apply {
             setRecognitionListener(this@MainActivity)
         }
@@ -177,17 +189,16 @@ class MainActivity: BaseActivity(), RecognitionListener {
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, Locale.KOREAN)
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR")
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-//                RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH)
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH)
+//                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
 
         intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 4500)
         intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 500)
         intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 500)
-//        intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5)
-//        RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH)
-//        binding.voice.play()
+
         val pulseAnim = AnimationUtils.loadAnimation(this, R.anim.pulse)
         binding.voice.startAnimation(pulseAnim)
+        vibrator.vibrate(100)
         speechRecognizer.startListening(intent)
     }
 
@@ -204,11 +215,9 @@ class MainActivity: BaseActivity(), RecognitionListener {
         }
     }
 
-    override fun onBeginningOfSpeech() {
-    }
+    override fun onBeginningOfSpeech() {}
     override fun onBufferReceived(buffer: ByteArray?) {}
-    override fun onEndOfSpeech() {
-    }
+    override fun onEndOfSpeech() {}
 
     override fun onError(error: Int) {
         var message: String = ""
@@ -235,14 +244,8 @@ class MainActivity: BaseActivity(), RecognitionListener {
 
     override fun onResults(results: Bundle?) {
         val matches = results!!.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION) ?: return
-//        var msg = ""
-//        for (m in matches){
-//            msg += " $m"
-//        }
-//        UiUtils.makeToast(binding.root, msg)
         viewModel.checkResult(matches)
         listening = false
-//        binding.voice.stop()
     }
     override fun onRmsChanged(rmsdB: Float) {}
 

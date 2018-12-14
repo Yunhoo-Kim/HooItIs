@@ -9,9 +9,11 @@ import com.hooitis.hoo.hooitis.model.quiz.Quiz
 class QuizItemVM: BaseViewModel() {
     val imageUrl: MutableLiveData<String> = MutableLiveData()
     val origin: MutableLiveData<String> = MutableLiveData()
+    val result: MutableLiveData<String> = MutableLiveData()
 
     fun bind(quiz: Quiz){
         this.imageUrl.value = quiz.imageUrl
         this.origin.value = "출처 : Daum"
+        this.result.value = quiz.answerList.first()
     }
 }

@@ -10,6 +10,7 @@ class SharedPreferenceHelper @Inject constructor(@Named("appContext")private val
     enum class KEY(val key:String) {
         ACCESS_TOKEN(key = "ACCESS_TOKEN"),
         USER_ID(key = "USER_ID"),
+        PLAYERS(key = "PLAYERS"),
         MIC_MODE(key = "MIC_MODE")
     }
 

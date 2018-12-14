@@ -7,7 +7,9 @@ import com.hooitis.hoo.hooitis.model.SharedPreferenceHelper
 import com.hooitis.hoo.hooitis.model.quiz.Quiz
 import com.hooitis.hoo.hooitis.model.quiz.QuizRepository
 import com.hooitis.hoo.hooitis.ui.QuizImageListAdapter
+import com.hooitis.hoo.hooitis.ui.QuizResultListAdapter
 import com.hooitis.hoo.hooitis.utils.COUNTDOWN
+import com.hooitis.hoo.hooitis.utils.KEYBOARD_COUNTDOWN
 import java.util.*
 import javax.inject.Inject
 import kotlin.concurrent.schedule
@@ -22,9 +24,17 @@ class MainVM @Inject constructor(
     private var index = 0
     private lateinit var timer: Timer
     private lateinit var quizList: List<Quiz>
+    var quizResultList: MutableList<Quiz>
+    private var playerList: MutableList<Boolean>
 
+    private lateinit var countDownValue: String
+
+    private val numOfPlayer: Int by lazy {
+        sharedPreferenceHelper.getInt(SharedPreferenceHelper.KEY.PLAYERS)
+    }
 
     val wrong: MutableLiveData<Boolean> = MutableLiveData()
+    val pTurn: MutableLiveData<Int> = MutableLiveData()
     val quizIndex: MutableLiveData<Int> = MutableLiveData()
     val countDown: MutableLiveData<String> = MutableLiveData()
 
@@ -32,29 +42,53 @@ class MainVM @Inject constructor(
         QuizImageListAdapter()
     }
 
+    val quizResultListAdapter: QuizResultListAdapter by lazy {
+        QuizResultListAdapter()
+    }
+
     init {
         wrong.value = false
         index = 0
+        pTurn.value = 0
         quizIndex.value = index
-        countDown.value = COUNTDOWN
+        countDownValue = COUNTDOWN
+        playerList = mutableListOf()
+        quizResultList = mutableListOf()
+
+        for (i in 0 until numOfPlayer){
+           playerList.add(false)
+        }
+
+    }
+
+    fun setKeyboardCountDown(){
+        countDownValue = KEYBOARD_COUNTDOWN
     }
 
     fun loadQuizData(){
+        countDown.value = countDownValue
         quizList = quizRepository.getQuizzes().blockingFirst().shuffled()
         quizImageListAdapter.updateQuizList(quizList)
-
-//        for(i in quizList){
-//            Log.d("LoadQuiz", i.imageUrl)
-//
-//            for(j in i.answerList){
-//                Log.d("Quiz Answer", j)
-//            }
-//        }
         resetTimer()
     }
 
+    private fun getNextTurn(): Int{
+        var turn = -1
+        val pt = pTurn.value!!
+
+        for(i in (pt+1)..(playerList.size + pt)){
+            if(!playerList[i % playerList.size]) {
+                turn = i
+                pTurn.postValue(i % playerList.size)
+                break
+            }
+        }
+
+        return turn
+    }
+
     private fun resetTimer() {
-        countDown.postValue(COUNTDOWN)
+        countDown.postValue(countDownValue)
 
         if(::timer.isInitialized) {
             timer.cancel()
@@ -63,12 +97,20 @@ class MainVM @Inject constructor(
 
         timer = Timer("Count", false)
         timer.schedule(1000, 1000){
-            val cnt = countDown.value!!.toInt() - 1
-            if(cnt < 0){
+
+            try {
+                val cnt = countDown.value!!.toInt() - 1
+                if(cnt < 0){
+                    playerList[pTurn.value!!] = true
+                    val quiz = quizList[index]
+                    quizResultList.add(quiz)
+                    showNextQuiz()
+                }else {
+                    countDown.postValue(cnt.toString())
+                }
+            }catch(e: NumberFormatException){
                 wrong.postValue(true)
                 cancel()
-            }else {
-                countDown.postValue(cnt.toString())
             }
         }
     }
@@ -77,9 +119,16 @@ class MainVM @Inject constructor(
         if(wrong.value!!)
             return
 
-        quizIndex.postValue(index + 1)
-        index++
-        resetTimer()
+        val next = getNextTurn()
+        if(next < 0){
+            timer.purge()
+            timer.cancel()
+            wrong.postValue(true)
+        }else {
+            quizIndex.postValue(index + 1)
+            index++
+            resetTimer()
+        }
     }
 
     fun checkResult(results: List<String>): Boolean{
@@ -88,20 +137,43 @@ class MainVM @Inject constructor(
         val quiz = quizList[index]
         quiz.answerList.forEachIndexed { _, value ->
             Log.d("Quiz Answer", value)
-           if(results.contains(value)){
-               found = true
-               wrong.value = false
-               showNextQuiz()
-               return@forEachIndexed
-           }
+            if(results.contains(value)){
+                found = true
+                return@forEachIndexed
+            }
+        }
+        if (found){
+            wrong.value = false
+        }
+        else{
+            playerList[pTurn.value!!] = true
+            quizResultList.add(quiz)
         }
 
-//        if (!found){
-//            timer.cancel()
-//            timer.purge()
-//            wrong.postValue(true)
-//        }
+        showNextQuiz()
+        return found
+    }
 
+    fun checkResult(result: String): Boolean{
+        var found = false
+
+        val quiz = quizList[index]
+        quiz.answerList.forEachIndexed { _, value ->
+            if(value.contains(result)){
+                found = true
+                return@forEachIndexed
+            }
+        }
+
+        if (found){
+            wrong.value = false
+        }
+        else{
+            playerList[pTurn.value!!] = true
+            quizResultList.add(quiz)
+        }
+
+        showNextQuiz()
         return found
     }
 

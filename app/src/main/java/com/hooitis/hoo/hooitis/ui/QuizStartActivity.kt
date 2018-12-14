@@ -12,9 +12,7 @@ import com.hooitis.hoo.hooitis.R
 import com.hooitis.hoo.hooitis.base.BaseActivity
 import com.hooitis.hoo.hooitis.databinding.ActivityStartupBinding
 import com.hooitis.hoo.hooitis.model.SharedPreferenceHelper
-import com.hooitis.hoo.hooitis.utils.AUTO_MIC
-import com.hooitis.hoo.hooitis.utils.BTN_MIC
-import com.hooitis.hoo.hooitis.utils.UiUtils
+import com.hooitis.hoo.hooitis.utils.*
 import io.reactivex.BackpressureStrategy
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.subjects.BehaviorSubject
@@ -41,11 +39,22 @@ class QuizStartActivity: BaseActivity(){
         setContentView(binding.root)
         requestMicPermission()
 
-        Log.d("MICMODE", sharedPreferenceHelper.getInt(SharedPreferenceHelper.KEY.MIC_MODE).toString())
-
         when(sharedPreferenceHelper.getInt(SharedPreferenceHelper.KEY.MIC_MODE)){
             0 -> binding.autoVoice.isChecked = true
-            else -> binding.buttonVoice.isChecked = true
+            1 -> binding.buttonVoice.isChecked = true
+            else -> binding.keyboardInput.isChecked = true
+        }
+
+        when(sharedPreferenceHelper.getInt(SharedPreferenceHelper.KEY.PLAYERS)){
+            0 -> {
+                sharedPreferenceHelper.setInt(SharedPreferenceHelper.KEY.PLAYERS, ONE_PLAYER)
+                binding.oneP.isChecked = true
+            }
+            1 -> binding.oneP.isChecked = true
+            2 -> binding.twoP.isChecked = true
+            3 -> binding.threeP.isChecked = true
+            4 -> binding.fourP.isChecked = true
+            else -> binding.fiveP.isChecked = true
         }
 
         binding.apply {
@@ -55,11 +64,32 @@ class QuizStartActivity: BaseActivity(){
             buttonVoice.setOnClickListener {
                 sharedPreferenceHelper.setInt(SharedPreferenceHelper.KEY.MIC_MODE, BTN_MIC)
             }
+            keyboardInput.setOnClickListener {
+                sharedPreferenceHelper.setInt(SharedPreferenceHelper.KEY.MIC_MODE, KEYBOARD_MODE)
+            }
+            oneP.setOnClickListener {
+                sharedPreferenceHelper.setInt(SharedPreferenceHelper.KEY.PLAYERS, ONE_PLAYER)
+            }
+            twoP.setOnClickListener {
+                sharedPreferenceHelper.setInt(SharedPreferenceHelper.KEY.PLAYERS, TWO_PLAYER)
+            }
+            threeP.setOnClickListener {
+                sharedPreferenceHelper.setInt(SharedPreferenceHelper.KEY.PLAYERS, THREE_PLAYER)
+            }
+            fourP.setOnClickListener {
+                sharedPreferenceHelper.setInt(SharedPreferenceHelper.KEY.PLAYERS, FOUR_PLAYER)
+            }
+            fiveP.setOnClickListener {
+                sharedPreferenceHelper.setInt(SharedPreferenceHelper.KEY.PLAYERS, FIVE_PLAYER)
+            }
         }
 
         binding.startQuiz.setOnClickListener {
             MediaPlayer.create(this, resources.getIdentifier("zing", "raw", packageName)).start()
-            val intent = Intent(applicationContext, BeforeQuizActivity::class.java)
+            val intent = Intent(applicationContext, BeforeQuizActivity::class.java).apply {
+                putExtra("MODE", sharedPreferenceHelper.getInt(SharedPreferenceHelper.KEY.MIC_MODE))
+            }
+
             startActivity(intent)
         }
 

@@ -32,10 +32,20 @@ class BeforeQuizActivity: BaseActivity(){
 
     private val mRunnable: Runnable = Runnable {
         if(!isFinishing){
-            val intent = Intent(applicationContext, MainActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
-            startActivity(intent)
-            finish()
+            when(this.intent.extras.getInt("MODE")){
+                2 -> {
+                    val intent = Intent(applicationContext, KeyboardModeActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+                    startActivity(intent)
+                    finish()
+                }
+                else -> {
+                    val intent = Intent(applicationContext, MainActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+                    startActivity(intent)
+                    finish()
+                }
+            }
         }
     }
 

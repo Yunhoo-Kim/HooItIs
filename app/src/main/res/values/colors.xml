@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="radio_button_selected_color">#fffc6300</color>
-    <color name="radio_button_unselected_color">#ffffff</color>
+    <color name="radio_button_unselected_color">#ed8643</color>
+    <color name="radio_button_selected_color">#ffffff</color>
     <!--<color name="colorPrimaryDark">#fc6300</color>-->
-    <color name="colorPrimary">#df530c</color>
+    <color name="colorPrimary">#e0530c</color>
     <color name="colorPrimaryLight">#fa8b00</color>
     <color name="colorPrimaryDark">#770500</color>
     <color name="colorPrimaryDarker">#4b0000</color>
